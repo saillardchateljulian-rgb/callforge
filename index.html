@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%E2%9A%A1</text></svg>">
+<title>CallForge</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --bg:#0a0a0b; --panel:#111113; --panel2:#18181b; --line:#232326;
+  --txt:#ededef; --muted:#8a8f98; --faint:#5b5e66;
+  --acc:#6e79f7; --ok:#3dd68c; --warn:#f5a623; --bad:#f4587a; --violet:#b18cf5; --cyan:#4cc4e0;
+  --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--txt);font:14px/1.55 "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+button{font:inherit;cursor:pointer;border:none;color:inherit;background:none;-webkit-tap-highlight-color:transparent}
+input,textarea,select{font:inherit;color:var(--txt);background:transparent;border:1px solid var(--line);border-radius:8px;padding:10px 12px;outline:none;transition:border-color .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--acc)}
+select{background:var(--panel)}
+::placeholder{color:var(--faint)}
+a{color:inherit}
+.hidden{display:none!important}
+
+/* ---------- header ---------- */
+header{display:flex;align-items:center;gap:20px;padding:0 20px;height:54px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(10,10,11,.85);backdrop-filter:blur(12px);z-index:50}
+.logo{font-size:15px;font-weight:600;letter-spacing:-.2px;white-space:nowrap}
+.logo i{font-style:normal;color:var(--acc)}
+nav{display:flex;gap:2px}
+nav button{padding:6px 12px;border-radius:7px;color:var(--muted);font-weight:500;font-size:13.5px;transition:color .15s,background .15s}
+nav button:hover{color:var(--txt)}
+nav button.on{background:var(--panel2);color:var(--txt)}
+.spacer{flex:1}
+.ring-wrap{display:flex;align-items:center;gap:10px}
+.ring-txt{font-size:11px;color:var(--muted);text-align:right;line-height:1.3}
+.ring-txt b{color:var(--txt);font-size:13px;font-weight:600;cursor:pointer}
+#btn-logout{font-size:11.5px;color:var(--faint)}
+#btn-logout:hover{color:var(--muted)}
+
+/* ---------- layout ---------- */
+main{max-width:1180px;margin:0 auto;padding:24px 20px calc(24px + env(safe-area-inset-bottom))}
+.grid{display:grid;grid-template-columns:1.25fr .95fr;gap:20px;align-items:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+
+/* ---------- auth / setup screens ---------- */
+.center-screen{min-height:calc(100vh - 54px);display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:34px;width:100%;max-width:420px}
+.auth-card h2{font-size:19px;font-weight:600;letter-spacing:-.3px;margin-bottom:6px}
+.auth-card .sub{color:var(--muted);font-size:13.5px;margin-bottom:22px}
+.auth-card label{display:block;font-size:12px;color:var(--muted);margin:14px 0 6px;font-weight:500}
+.auth-card input{width:100%}
+.btn-primary{width:100%;padding:12px;border-radius:9px;font-size:14px;font-weight:600;background:#fff;color:#0a0a0b;margin-top:20px;transition:opacity .15s}
+.btn-primary:hover{opacity:.9}
+.btn-primary:disabled{opacity:.4}
+.auth-err{color:var(--bad);font-size:13px;margin-top:12px;min-height:18px}
+.auth-hint{color:var(--faint);font-size:12px;margin-top:16px;line-height:1.6}
+.auth-hint a{color:var(--muted)}
+
+/* ---------- lead card ---------- */
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;padding:3px 10px;border-radius:99px;border:1px solid var(--line);color:var(--muted);background:transparent}
+.badge.due{border-color:rgba(76,196,224,.35);color:var(--cyan)}
+.badge.retry{border-color:rgba(245,166,35,.35);color:var(--warn)}
+.badge.hot{border-color:rgba(177,140,245,.4);color:var(--violet)}
+.lead-name{font-size:25px;font-weight:600;letter-spacing:-.4px;margin:14px 0 3px}
+.lead-sub{color:var(--muted);font-size:13.5px}
+.phone{font-size:34px;font-weight:600;letter-spacing:.5px;margin:18px 0 6px;font-variant-numeric:tabular-nums}
+.phone a{text-decoration:none;transition:color .15s}
+.phone a:hover{color:var(--acc)}
+.meta-row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
+
+.callbar{display:flex;align-items:center;gap:10px;margin:20px 0 10px}
+.btn-call{flex:1;padding:14px;border-radius:9px;font-size:14.5px;font-weight:600;background:#fff;color:#0a0a0b;transition:opacity .15s,transform .06s}
+.btn-call:hover{opacity:.9}
+.btn-call:active{transform:scale(.99)}
+.btn-call:disabled{opacity:.35;cursor:default}
+.btn-call span{opacity:.45;font-size:12px;font-weight:500}
+.btn-ghost{padding:12px 16px;border-radius:9px;border:1px solid var(--line);color:var(--muted);font-weight:500;font-size:13.5px;transition:color .15s,border-color .15s}
+.btn-ghost:hover{color:var(--txt);border-color:#333338}
+.timer{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;min-width:72px;text-align:center}
+.rec-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--bad);margin-right:8px;animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.2}}
+#rec-state{font-size:12px;color:var(--faint)}
+#rec-state a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
+#rec-state b{color:var(--muted);font-weight:500}
+
+.outcomes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+.outcomes button{padding:12px 8px;border-radius:9px;background:transparent;border:1px solid var(--line);font-weight:500;font-size:12.5px;display:flex;flex-direction:column;gap:5px;align-items:center;transition:border-color .15s,background .15s}
+.outcomes button:hover{border-color:#3a3a40;background:var(--panel2)}
+.outcomes .dot{width:8px;height:8px;border-radius:50%}
+.outcomes .key{font-size:10px;color:var(--faint)}
+
+textarea#notes{width:100%;min-height:70px;margin-top:16px;resize:vertical;background:transparent}
+
+.history{margin-top:20px;border-top:1px solid var(--line);padding-top:16px}
+.history h4{font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--faint);font-weight:600;margin-bottom:8px}
+.hist-item{display:flex;gap:10px;font-size:13px;color:var(--muted);padding:3px 0}
+.hist-item b{color:var(--txt);font-weight:500}
+
+.nextups .ni{display:flex;justify-content:space-between;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);font-size:13px}
+.nextups .ni:last-child{border:none}
+.nextups .ni b{font-weight:500}
+.nextups .ni span{color:var(--faint);text-align:right}
+
+/* ---------- script panel ---------- */
+.script h3{font-size:14px;font-weight:600;margin-bottom:2px}
+.script-sub{font-size:12px;color:var(--faint);margin-bottom:10px}
+details{border-bottom:1px solid var(--line)}
+details:last-of-type{border:none}
+details summary{padding:13px 2px;font-weight:500;cursor:pointer;list-style:none;font-size:13.5px;color:var(--txt);display:flex;align-items:center}
+details summary::after{content:"+";margin-left:auto;color:var(--faint);font-size:15px}
+details[open] summary::after{content:"–"}
+details summary::-webkit-details-marker{display:none}
+details .body{padding:2px 2px 16px;font-size:13.5px;color:var(--muted)}
+details .body p{margin-bottom:9px}
+details .body i{color:var(--txt);font-style:normal;font-weight:500}
+kbd{border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:11px;color:var(--muted);background:var(--panel2)}
+
+/* ---------- popover ---------- */
+.overlay{position:fixed;inset:0;background:rgba(5,5,6,.7);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(3px);padding:16px}
+.pop{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;width:100%;max-width:380px}
+.pop h3{margin-bottom:16px;font-size:15px;font-weight:600}
+.pop .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pop .opts button{padding:12px;border-radius:9px;border:1px solid var(--line);font-weight:500;font-size:13px;transition:border-color .15s,background .15s}
+.pop .opts button:hover{border-color:var(--acc);background:var(--panel2)}
+
+/* ---------- dashboard ---------- */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px}
+.kpi .v{font-size:23px;font-weight:600;letter-spacing:-.5px;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:1.1px;font-weight:600}
+.kpi .s{font-size:11.5px;color:var(--muted);margin-top:4px}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chart-title{font-size:10.5px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:16px}
+.bars{display:flex;align-items:flex-end;gap:4px;height:110px}
+.bars .b{flex:1;background:var(--acc);opacity:.85;border-radius:3px 3px 1px 1px;min-height:2px;position:relative}
+.bars .b .tip{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);padding-bottom:3px;white-space:nowrap}
+.bars-x{display:flex;gap:4px;margin-top:7px}
+.bars-x span{flex:1;text-align:center;font-size:9px;color:var(--faint)}
+.donut-wrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.donut{width:130px;height:130px;border-radius:50%;position:relative;flex:none}
+.donut::after{content:"";position:absolute;inset:21px;background:var(--panel);border-radius:50%}
+.legend{font-size:12.5px}
+.legend div{display:flex;align-items:center;gap:9px;margin:5px 0;color:var(--muted)}
+.legend i{width:8px;height:8px;border-radius:50%;flex:none}
+.legend b{color:var(--txt);font-weight:500}
+.hbar{margin:10px 0}
+.hbar .t{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.hbar .t b{font-weight:500}
+.hbar .t span{color:var(--faint)}
+.hbar .rail{height:5px;background:var(--panel2);border-radius:3px;overflow:hidden}
+.hbar .fill{height:100%;border-radius:3px;background:var(--acc)}
+.rec-list{margin-top:6px}
+.rec-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px;flex-wrap:wrap}
+.rec-item:last-child{border:none}
+.rec-item .who{min-width:180px}
+.rec-item .who b{display:block;font-weight:500}
+.rec-item .who span{font-size:11.5px;color:var(--faint)}
+.rec-item audio{height:32px;flex:1;min-width:180px}
+.rec-none{color:var(--faint);font-size:12px;flex:1;text-align:center}
+.rec-note{color:var(--muted);font-size:12px;max-width:220px}
+.empty{color:var(--faint);text-align:center;padding:34px 0;font-size:13px}
+
+/* ---------- contacts ---------- */
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:var(--faint);font-weight:600;text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line)}
+td b{font-weight:500}
+tr:hover td{background:var(--panel2)}
+.st{font-size:11.5px;font-weight:500;padding:2px 9px;border-radius:99px;border:1px solid;white-space:nowrap}
+.btn-mini{font-size:12px;font-weight:500;color:var(--txt);padding:4px 11px;border-radius:7px;border:1px solid var(--line);transition:border-color .15s}
+.btn-mini:hover{border-color:var(--acc)}
+
+.toast{position:fixed;bottom:calc(26px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);padding:11px 20px;border-radius:10px;font-weight:500;font-size:13.5px;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,.5);white-space:nowrap}
+.pulse-ok{animation:pok .5s}
+@keyframes pok{0%{box-shadow:0 0 0 0 rgba(61,214,140,.5)}100%{box-shadow:0 0 0 26px rgba(61,214,140,0)}}
+
+/* ---------- mobile ---------- */
+@media(max-width:980px){
+  .grid,.dash-grid{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:640px){
+  header{gap:10px;padding:0 12px}
+  nav button{padding:6px 9px;font-size:12.5px}
+  .ring-txt{display:none}
+  main{padding:16px 12px calc(16px + env(safe-area-inset-bottom))}
+  .card{padding:16px}
+  .lead-name{font-size:21px}
+  .phone{font-size:29px}
+  .outcomes{grid-template-columns:repeat(2,1fr)}
+  .callbar{flex-wrap:wrap}
+  .rec-item .who{min-width:130px}
+  th:nth-child(4),td:nth-child(4),th:nth-child(6),td:nth-child(6){display:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">CallForge<i>.</i></div>
+  <nav id="main-nav" class="hidden">
+    <button data-v="call" class="on">Appels</button>
+    <button data-v="dash">Dashboard</button>
+    <button data-v="contacts">Contacts</button>
+  </nav>
+  <div class="spacer"></div>
+  <div class="ring-wrap hidden" id="ring-wrap">
+    <button id="btn-logout">déconnexion</button>
+    <div class="ring-txt">Aujourd'hui<br><b id="today-count">0</b> <span style="color:var(--faint)">/ <span id="goal-txt">30</span></span></div>
+    <svg width="38" height="38" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="16" fill="none" stroke="#232326" stroke-width="3.5"/>
+      <circle id="ring" cx="20" cy="20" r="16" fill="none" stroke="#6e79f7" stroke-width="3.5"
+              stroke-linecap="round" stroke-dasharray="100.5" stroke-dashoffset="100.5"
+              transform="rotate(-90 20 20)"/>
+    </svg>
+  </div>
+</header>
+
+<!-- ================= ECRAN SETUP SUPABASE ================= -->
+<div class="center-screen hidden" id="screen-setup">
+  <div class="auth-card">
+    <h2>Connexion à Supabase</h2>
+    <div class="sub">Une seule fois — colle les infos de ton projet Supabase.</div>
+    <label>URL du projet</label>
+    <input id="sb-url" placeholder="https://xxxx.supabase.co" autocapitalize="off" autocorrect="off">
+    <label>Clé anon (public)</label>
+    <input id="sb-key" placeholder="eyJhbGciOi…" autocapitalize="off" autocorrect="off">
+    <button class="btn-primary" id="btn-setup">Connecter</button>
+    <div class="auth-err" id="setup-err"></div>
+    <div class="auth-hint">Tu les trouves dans ton projet Supabase → <b>Settings → API</b>.<br>Elles sont stockées uniquement sur cet appareil.</div>
+  </div>
+</div>
+
+<!-- ================= ECRAN LOGIN ================= -->
+<div class="center-screen hidden" id="screen-login">
+  <div class="auth-card">
+    <h2>Connexion</h2>
+    <div class="sub">Connecte-toi pour accéder à tes leads.</div>
+    <label>Email</label>
+    <input id="login-email" type="email" autocomplete="username">
+    <label>Mot de passe</label>
+    <input id="login-pw" type="password" autocomplete="current-password">
+    <button class="btn-primary" id="btn-login">Se connecter</button>
+    <div class="auth-err" id="login-err"></div>
+    <div class="auth-hint">Crée ton utilisateur dans Supabase → <b>Authentication → Add user</b>.</div>
+  </div>
+</div>
+
+<!-- ================= ECRAN IMPORT ================= -->
+<div class="center-screen hidden" id="screen-import">
+  <div class="auth-card">
+    <h2>Importer tes contacts</h2>
+    <div class="sub">Ta base est vide. Importe ton CSV d'artisans (colonnes : nom, metier, telephone, email, ville, adresse).</div>
+    <input type="file" id="import-file" accept=".csv" style="width:100%;padding:10px">
+    <button class="btn-primary" id="btn-import">Importer</button>
+    <div class="auth-err" id="import-err"></div>
+    <div class="auth-hint">Fichier attendu : <b>artisans_PORTABLE_06_07.csv</b> (sur ton Mac, dossier prospection-artisans).</div>
+  </div>
+</div>
+
+<main class="hidden" id="app">
+
+<!-- ================= VUE APPELS ================= -->
+<section id="view-call">
+  <div class="grid">
+    <div>
+      <div class="card" id="lead-card">
+        <div id="lead-body"></div>
+
+        <div class="callbar">
+          <button class="btn-call" id="btn-start">Démarrer l'appel <span>espace</span></button>
+          <div class="timer hidden" id="timer">00:00</div>
+          <button class="btn-ghost" id="btn-skip">Passer</button>
+        </div>
+        <div id="rec-state">Enregistrement auto : <b id="rec-flag">activé</b> · <a href="#" id="rec-toggle">changer</a></div>
+
+        <div class="outcomes hidden" id="outcomes"></div>
+        <textarea id="notes" placeholder="Notes sur l'appel — nom du gérant, objection, contexte…"></textarea>
+
+        <div class="history" id="history"></div>
+      </div>
+
+      <div class="card nextups" style="margin-top:16px">
+        <div class="chart-title" style="margin-bottom:4px">File d'attente · <span id="queue-count"></span></div>
+        <div id="nextups-list"></div>
+      </div>
+    </div>
+
+    <div class="card script">
+      <h3>Script de vente</h3>
+      <div class="script-sub">Offre : site web IA + Google Ads pour artisans</div>
+
+      <details open>
+        <summary>Accroche — 10 premières secondes</summary>
+        <div class="body">
+          <p>« Bonjour, c'est <i>[ton prénom]</i> — je vous dérange pas longtemps. Je suis tombé sur votre entreprise en cherchant un <i>[métier]</i> à <i>[ville]</i>… et j'ai vu un truc qui m'a surpris : <i>vous n'avez aucun site web</i>. »</p>
+          <p>« Du coup je vous pose la question direct : quand quelqu'un cherche un <i>[métier]</i> sur Google dans votre coin, aujourd'hui c'est vos concurrents qui récupèrent le chantier. Vous le saviez ? »</p>
+          <p style="color:var(--faint);font-size:12.5px">→ Silence. Le laisser répondre. L'objectif n'est pas de vendre le site, c'est d'obtenir 15 min.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Pitch — s'il écoute</summary>
+        <div class="body">
+          <p>« Ce que je fais : je livre un site clé en main en 48h — vous n'avez <i>rien</i> à faire — et je le branche sur Google pour que les gens qui cherchent en urgence tombent sur <i>vous</i>. »</p>
+          <p>« Concrètement : un seul chantier gagné rembourse tout le système. Le reste de l'année, c'est du bénéfice. »</p>
+          <p>« Je vous propose 15 minutes cette semaine, je vous montre à quoi ressemblerait <i>votre</i> site. Mardi ou jeudi ? »</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Objections</summary>
+        <div class="body">
+          <p><i>« J'ai pas le temps »</i> → « Justement. Vous ne faites rien : je m'occupe de tout, vous validez en 15 min et c'est en ligne en 48h. »</p>
+          <p><i>« J'ai déjà assez de boulot »</i> → « Parfait — c'est exactement le moment de choisir vos chantiers. Plus de demandes = vous prenez les plus gros et vous montez vos prix. »</p>
+          <p><i>« Ça coûte combien ? »</i> → « Moins qu'un seul chantier moyen. Mais je préfère vous montrer d'abord ce que vous auriez — 15 min, et vous jugez sur pièce. »</p>
+          <p><i>« Le bouche-à-oreille me suffit »</i> → « Il est top, gardez-le. Sauf que les urgences et les nouveaux arrivants, eux, ils cherchent sur Google. C'est du chiffre en plus, pas du remplacement. »</p>
+          <p><i>« Envoyez-moi un mail »</i> → « Je peux, mais un mail ne montre rien. 15 minutes en visio, je vous montre votre futur site en direct. Mardi 18h ? »</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Closing RDV</summary>
+        <div class="body">
+          <p>Toujours proposer <i>deux créneaux précis</i> : « Mardi 12h30 ou jeudi 18h ? » — jamais « quand êtes-vous dispo ? ».</p>
+          <p>Confirmer par SMS immédiatement après l'appel avec le créneau.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Raccourcis clavier</summary>
+        <div class="body">
+          <p><kbd>espace</kbd> démarrer l'appel · <kbd>1</kbd>–<kbd>7</kbd> classer · <kbd>S</kbd> passer le contact</p>
+          <p style="color:var(--faint);font-size:12.5px">Bonne pratique : annonce que l'appel peut être enregistré.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ================= VUE DASHBOARD ================= -->
+<section id="view-dash" class="hidden">
+  <div class="kpis" id="kpis"></div>
+  <div class="dash-grid">
+    <div class="card"><div class="chart-title">Appels · 14 derniers jours</div><div id="chart-days"></div></div>
+    <div class="card"><div class="chart-title">Répartition des résultats</div><div id="chart-donut"></div></div>
+    <div class="card"><div class="chart-title">Performance par métier</div><div id="chart-metier"></div></div>
+    <div class="card"><div class="chart-title">Taux de décroché par heure</div><div id="chart-hours"></div></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div style="display:flex;align-items:center">
+      <div class="chart-title" style="margin-bottom:0">Enregistrements & recap des appels</div>
+      <div class="spacer"></div>
+      <button class="btn-mini" id="btn-export">Exporter CSV</button>
+    </div>
+    <div class="rec-list" id="rec-list"></div>
+  </div>
+</section>
+
+<!-- ================= VUE CONTACTS ================= -->
+<section id="view-contacts" class="hidden">
+  <div class="card">
+    <div class="toolbar">
+      <input id="search" placeholder="Rechercher nom, ville, numéro…" style="flex:1;min-width:180px">
+      <select id="f-metier"><option value="">Tous les métiers</option></select>
+      <select id="f-status">
+        <option value="">Tous les statuts</option>
+        <option value="new">Jamais appelé</option>
+        <option value="callback">À rappeler</option>
+        <option value="interested">Intéressé</option>
+        <option value="meeting">RDV pris</option>
+        <option value="not_interested">Pas intéressé</option>
+        <option value="no_answer">Pas de réponse</option>
+        <option value="voicemail">Répondeur</option>
+        <option value="wrong_number">Nº invalide</option>
+      </select>
+    </div>
+    <div style="max-height:64vh;overflow:auto">
+      <table>
+        <thead><tr><th>Nom</th><th>Métier</th><th>Téléphone</th><th>Ville</th><th>Statut</th><th>Appels</th><th></th></tr></thead>
+        <tbody id="contacts-body"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div id="popover-root"></div>
+
+<script>
+/* ================= CONFIG ================= */
+const METIERS = {plumber:"Plombier",electrician:"Électricien",carpenter:"Charpentier",painter:"Peintre",
+  hvac:"Chauffagiste / Clim",roofer:"Couvreur",tiler:"Carreleur",plasterer:"Plaquiste",glaziery:"Vitrier",
+  locksmith:"Serrurier",stonemason:"Tailleur de pierre",metal_construction:"Métallier",scaffolder:"Échafaudeur",
+  floorer:"Solier",parquet_layer:"Parqueteur",insulation:"Isolation",joiner:"Menuisier",
+  window_construction:"Menuiseries / Fenêtres",heating_engineer:"Chauffagiste"};
+const PRIORITY = {plumber:10,electrician:9,hvac:9,roofer:8,heating_engineer:8,locksmith:7,joiner:6,
+  window_construction:6,carpenter:5,metal_construction:5,painter:4,tiler:4,plasterer:3,insulation:3,
+  glaziery:3,stonemason:2,parquet_layer:2,scaffolder:1,floorer:1};
+const OUTCOMES = [
+ {k:"no_answer",     label:"Pas de réponse", ico:"○", key:"1", color:"#8a8f98"},
+ {k:"voicemail",     label:"Répondeur",      ico:"◍", key:"2", color:"#f5a623"},
+ {k:"callback",      label:"À rappeler",     ico:"↺", key:"3", color:"#4cc4e0", needsDate:true},
+ {k:"not_interested",label:"Pas intéressé",  ico:"✕", key:"4", color:"#f4587a", terminal:true},
+ {k:"interested",    label:"Intéressé",      ico:"★", key:"5", color:"#b18cf5", needsDate:true},
+ {k:"meeting",       label:"RDV pris",       ico:"✓", key:"6", color:"#3dd68c", terminal:true},
+ {k:"wrong_number",  label:"Nº invalide",    ico:"⊘", key:"7", color:"#5b5e66", terminal:true},
+];
+const OUT = Object.fromEntries(OUTCOMES.map(o=>[o.k,o]));
+const MAX_ATTEMPTS = 4;
+const RETRY_DELAY = {no_answer:4*3600e3, voicemail:24*3600e3};
+
+/* ================= STATE ================= */
+let sb=null;
+let contacts=[], calls=[], queue=[], current=null, forced=null;
+let session={running:false,start:0,timerInt:null,recorder:null,chunks:[],stream:null,callId:null};
+let skipped=new Set();
+let cfg=JSON.parse(localStorage.getItem("cf_cfg")||"{}");
+if(cfg.goal==null)cfg.goal=30;
+if(cfg.record==null)cfg.record=true;
+const saveCfg=()=>localStorage.setItem("cf_cfg",JSON.stringify(cfg));
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ================= HELPERS ================= */
+const fmtPhone=p=>String(p).replace(/(\d{2})(?=\d)/g,"$1 ").trim();
+const telHref=p=>"tel:+33"+String(p).replace(/\D/g,"").slice(1);
+const fmtDate=ts=>new Date(ts).toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+const dayKey=ts=>{const d=new Date(ts);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const todayKey=()=>dayKey(Date.now());
+const metier=c=>METIERS[c.metier]||c.metier;
+
+function callsFor(cid){return calls.filter(c=>c.contact_id===cid)}
+function lastCall(cid){const l=callsFor(cid);return l.length?l[l.length-1]:null}
+function statusOf(cid){const l=lastCall(cid);return l?l.outcome:"new"}
+
+/* ================= SCREENS ================= */
+function show(screen){
+  ["screen-setup","screen-login","screen-import","app"].forEach(id=>$("#"+id).classList.toggle("hidden",id!==screen));
+  const inApp=screen==="app";
+  $("#main-nav").classList.toggle("hidden",!inApp);
+  $("#ring-wrap").classList.toggle("hidden",!inApp);
+}
+
+/* ================= SUPABASE DATA LAYER ================= */
+async function loadAll(){
+  const [c1,c2]=await Promise.all([
+    sb.from("contacts").select("*").order("id").limit(5000),
+    sb.from("calls").select("*").order("ts").limit(20000),
+  ]);
+  if(c1.error)throw c1.error;
+  if(c2.error)throw c2.error;
+  contacts=c1.data;calls=c2.data;
+}
+async function insertCall(rec){
+  const {error}=await sb.from("calls").insert(rec);
+  if(error){toast("Erreur de sauvegarde — réessaie");console.error(error)}
+}
+async function uploadRecording(callId,blob,mime){
+  const ext=mime.includes("mp4")?"m4a":mime.includes("ogg")?"ogg":"webm";
+  const fname=callId+"."+ext;
+  const {error}=await sb.storage.from("recordings").upload(fname,blob,{contentType:mime});
+  if(error){console.error(error);return}
+  await sb.from("calls").update({recording:fname}).eq("id",callId);
+  const local=calls.find(c=>c.id===callId);
+  if(local)local.recording=fname;
+}
+
+/* ================= CSV IMPORT ================= */
+function parseCSV(text){
+  const rows=[];let row=[],cur="",inQ=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(inQ){
+      if(ch==='"'){if(text[i+1]==='"'){cur+='"';i++}else inQ=false}
+      else cur+=ch;
+    }else{
+      if(ch==='"')inQ=true;
+      else if(ch===","){row.push(cur);cur=""}
+      else if(ch==="\n"||ch==="\r"){if(cur!==""||row.length){row.push(cur);rows.push(row);row=[];cur=""}}
+      else cur+=ch;
+    }
+  }
+  if(cur!==""||row.length){row.push(cur);rows.push(row)}
+  return rows;
+}
+async function importCSV(file){
+  const text=await file.text();
+  const rows=parseCSV(text);
+  const head=rows[0].map(h=>h.trim().toLowerCase());
+  const idx=Object.fromEntries(["nom","metier","telephone","email","ville","adresse"].map(k=>[k,head.indexOf(k)]));
+  if(idx.nom<0||idx.telephone<0)throw new Error("Colonnes 'nom' et 'telephone' introuvables dans le CSV");
+  const recs=rows.slice(1).filter(r=>r[idx.nom]).map((r,i)=>({
+    id:i,nom:r[idx.nom]||"",metier:r[idx.metier]||"",telephone:r[idx.telephone]||"",
+    email:idx.email>=0?(r[idx.email]||""):"",ville:idx.ville>=0?(r[idx.ville]||""):"",
+    adresse:idx.adresse>=0?(r[idx.adresse]||""):""}));
+  for(let i=0;i<recs.length;i+=500){
+    const {error}=await sb.from("contacts").insert(recs.slice(i,i+500));
+    if(error)throw error;
+  }
+  return recs.length;
+}
+
+/* ================= QUEUE ================= */
+function buildQueue(){
+  const now=Date.now(), due=[], retry=[], fresh=[];
+  for(const c of contacts){
+    if(skipped.has(c.id))continue;
+    const hist=callsFor(c.id), last=hist.length?hist[hist.length-1]:null;
+    if(!last){fresh.push(c);continue}
+    const o=OUT[last.outcome];
+    if(!o||o.terminal)continue;
+    if(hist.length>=MAX_ATTEMPTS)continue;
+    if(last.outcome==="callback"||last.outcome==="interested"){
+      if(last.recall_at&&last.recall_at<=now)due.push({c,at:last.recall_at,hot:last.outcome==="interested"});
+      continue;
+    }
+    const delay=RETRY_DELAY[last.outcome]??24*3600e3;
+    if(now-last.ts>=delay)retry.push({c,at:last.ts});
+  }
+  due.sort((a,b)=>a.at-b.at);
+  retry.sort((a,b)=>a.at-b.at);
+  fresh.sort((a,b)=>(PRIORITY[b.metier]||0)-(PRIORITY[a.metier]||0));
+  queue=[...due.map(d=>({...d.c,_tag:d.hot?"hot":"due"})),...retry.map(r=>({...r.c,_tag:"retry"})),...fresh.map(c=>({...c,_tag:"new"}))];
+  if(forced!=null){
+    const i=queue.findIndex(c=>c.id===forced);
+    if(i>0){const [f]=queue.splice(i,1);queue.unshift(f)}
+    else if(i<0){const c=contacts.find(x=>x.id===forced);if(c)queue.unshift({...c,_tag:"force"})}
+  }
+}
+
+/* ================= RENDER : LEAD ================= */
+function tagBadge(t){
+  if(t==="hot")return '<span class="badge hot">★ Lead chaud — relance</span>';
+  if(t==="due")return '<span class="badge due">↺ Rappel prévu</span>';
+  if(t==="retry")return '<span class="badge retry">↻ Nouvelle tentative</span>';
+  if(t==="force")return '<span class="badge due">Appel ciblé</span>';
+  return '<span class="badge">Nouveau contact</span>';
+}
+function renderLead(){
+  buildQueue();
+  current=queue[0]||null;
+  const box=$("#lead-body");
+  $("#queue-count").textContent=queue.length+" contacts";
+  if(!current){
+    box.innerHTML='<div class="empty">File vide — tous les contacts joignables ont été traités.<br>Reviens plus tard pour les rappels.</div>';
+    $("#btn-start").disabled=true;
+    $("#history").innerHTML="";$("#nextups-list").innerHTML="";
+    return;
+  }
+  $("#btn-start").disabled=false;
+  const c=current, hist=callsFor(c.id);
+  box.innerHTML=`
+    ${tagBadge(c._tag)}
+    <div class="lead-name">${esc(c.nom)}</div>
+    <div class="lead-sub">${esc(metier(c))}${c.ville?" · "+esc(c.ville):""}${c.adresse?" · "+esc(c.adresse):""}</div>
+    <div class="phone"><a href="${telHref(c.telephone)}">${fmtPhone(c.telephone)}</a></div>
+    <div class="meta-row">
+      ${c.email?`<span class="badge">${esc(c.email)}</span>`:""}
+      <span class="badge">Tentative ${hist.length+1}/${MAX_ATTEMPTS}</span>
+    </div>`;
+  const h=$("#history");
+  if(hist.length){
+    h.innerHTML='<h4>Historique</h4>'+hist.slice(-3).reverse().map(x=>{
+      const o=OUT[x.outcome]||{ico:"•",label:x.outcome,color:"#888"};
+      return `<div class="hist-item"><span style="color:${o.color}">${o.ico}</span><div><b>${o.label}</b> · ${fmtDate(x.ts)}${x.notes?` — ${esc(x.notes)}`:""}</div></div>`;
+    }).join("");
+  }else h.innerHTML="";
+  $("#nextups-list").innerHTML=queue.slice(1,4).map(n=>
+    `<div class="ni"><b>${esc(n.nom)}</b><span>${esc(metier(n))}${n.ville?" · "+esc(n.ville):""}</span></div>`).join("")||'<div class="empty" style="padding:10px">—</div>';
+  $("#notes").value="";
+  renderOutcomeButtons();
+  updateRing();
+}
+function renderOutcomeButtons(){
+  $("#outcomes").innerHTML=OUTCOMES.map(o=>
+    `<button data-k="${o.k}"><span class="dot" style="background:${o.color}"></span>${o.label}<span class="key">${o.key}</span></button>`).join("");
+  $("#outcomes").querySelectorAll("button").forEach(b=>b.onclick=()=>classify(b.dataset.k));
+}
+
+/* ================= CALL FLOW ================= */
+async function startCall(){
+  if(!current||session.running)return;
+  session.running=true;
+  session.start=Date.now();
+  session.callId="c"+session.start;
+  $("#btn-start").classList.add("hidden");
+  $("#timer").classList.remove("hidden");
+  $("#outcomes").classList.remove("hidden");
+  session.timerInt=setInterval(()=>{
+    const s=Math.floor((Date.now()-session.start)/1000);
+    $("#timer").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+  },500);
+  if(cfg.record){
+    try{
+      if(!session.stream)session.stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      const mime=["audio/webm;codecs=opus","audio/webm","audio/mp4"].find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m))||"";
+      session.chunks=[];
+      session.recorder=new MediaRecorder(session.stream,mime?{mimeType:mime}:{});
+      session.recorder.ondataavailable=e=>{if(e.data.size)session.chunks.push(e.data)};
+      session.recorder.start();
+      $("#rec-state").innerHTML='<span class="rec-dot"></span>Enregistrement en cours…';
+    }catch(e){
+      toast("Micro indisponible — appel non enregistré");
+      session.recorder=null;
+    }
+  }
+  window.location.href=telHref(current.telephone);
+}
+function stopTimerUI(){
+  clearInterval(session.timerInt);
+  $("#timer").classList.add("hidden");$("#timer").textContent="00:00";
+  $("#outcomes").classList.add("hidden");
+  $("#btn-start").classList.remove("hidden");
+  $("#rec-state").innerHTML='Enregistrement auto : <b id="rec-flag">'+(cfg.record?"activé":"désactivé")+'</b> · <a href="#" id="rec-toggle">changer</a>';
+  bindRecToggle();
+}
+async function classify(k){
+  if(!session.running||!current)return;
+  const o=OUT[k];
+  if(o.needsDate){askRecallDate(k);return}
+  await finalize(k,null);
+}
+async function finalize(k,recallAt){
+  const dur=Math.round((Date.now()-session.start)/1000);
+  const rec={id:session.callId,contact_id:current.id,ts:session.start,outcome:k,
+    duration:dur,notes:$("#notes").value.trim(),recall_at:recallAt,
+    nom:current.nom,metier:current.metier,telephone:current.telephone,ville:current.ville||""};
+  let blob=null,mime="";
+  if(session.recorder&&session.recorder.state!=="inactive"){
+    await new Promise(res=>{session.recorder.onstop=res;session.recorder.stop()});
+    mime=session.recorder.mimeType||"audio/webm";
+    blob=new Blob(session.chunks,{type:mime});
+  }
+  calls.push(rec);
+  session.running=false;
+  stopTimerUI();
+  insertCall(rec);
+  if(blob&&blob.size>1000&&dur>=5)uploadRecording(session.callId,blob,mime);
+  if(k==="meeting"){$("#lead-card").classList.add("pulse-ok");setTimeout(()=>$("#lead-card").classList.remove("pulse-ok"),600);toast("RDV pris — bien joué")}
+  if(forced===current.id)forced=null;
+  renderLead();
+}
+function askRecallDate(k){
+  const H=3600e3, now=Date.now();
+  const d9=(days)=>{const d=new Date();d.setDate(d.getDate()+days);d.setHours(9,0,0,0);return d.getTime()};
+  const d14=(days)=>{const d=new Date();d.setDate(d.getDate()+days);d.setHours(14,0,0,0);return d.getTime()};
+  const opts=[["Dans 2 h",now+2*H],["Demain 9h",d9(1)],["Demain 14h",d14(1)],["Dans 3 jours",d9(3)],["Dans 1 semaine",d9(7)],["Dans 2 semaines",d9(14)]];
+  $("#popover-root").innerHTML=`<div class="overlay" id="ov"><div class="pop">
+    <h3><span style="color:${OUT[k].color}">${OUT[k].ico}</span> ${OUT[k].label} — quand le rappeler ?</h3>
+    <div class="opts">${opts.map((o,i)=>`<button data-i="${i}">${o[0]}</button>`).join("")}</div>
+    <button class="btn-ghost" style="margin-top:12px;width:100%" id="ov-cancel">Annuler</button>
+  </div></div>`;
+  document.querySelectorAll("#ov .opts button").forEach(b=>b.onclick=()=>{
+    $("#popover-root").innerHTML="";finalize(k,opts[+b.dataset.i][1]);
+  });
+  $("#ov-cancel").onclick=()=>$("#popover-root").innerHTML="";
+}
+
+/* ================= DASHBOARD ================= */
+function updateRing(){
+  const t=calls.filter(c=>dayKey(c.ts)===todayKey()).length;
+  $("#today-count").textContent=t;$("#goal-txt").textContent=cfg.goal;
+  const pct=Math.min(1,t/cfg.goal);
+  $("#ring").style.strokeDashoffset=100.5*(1-pct);
+}
+async function renderDash(){
+  const reachedK=["not_interested","interested","meeting","callback"];
+  const total=calls.length;
+  const today=calls.filter(c=>dayKey(c.ts)===todayKey()).length;
+  const reached=calls.filter(c=>reachedK.includes(c.outcome));
+  const meetings=calls.filter(c=>c.outcome==="meeting").length;
+  const hot=calls.filter(c=>c.outcome==="interested").length;
+  const pickup=total?Math.round(reached.length/total*100):0;
+  const interest=reached.length?Math.round((meetings+hot)/reached.length*100):0;
+  const dueN=queue.filter(c=>c._tag==="due"||c._tag==="hot").length;
+  $("#kpis").innerHTML=[
+    ["Appels passés",total,`${today} aujourd'hui`],
+    ["Taux de décroché",pickup+"%",`${reached.length} conversations`],
+    ["Taux d'intérêt",interest+"%",`${hot} chauds · ${meetings} RDV`],
+    ["RDV pris",meetings,"objectif : closer"],
+    ["Rappels dus",dueN,"dans la file maintenant"],
+  ].map(k=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join("");
+
+  const days=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(dayKey(d.getTime()))}
+  const perDay=days.map(k=>calls.filter(c=>dayKey(c.ts)===k).length);
+  const mx=Math.max(...perDay,1);
+  $("#chart-days").innerHTML=`<div class="bars">${perDay.map(v=>`<div class="b" style="height:${v/mx*100}%"><span class="tip">${v||""}</span></div>`).join("")}</div>
+    <div class="bars-x">${days.map(k=>`<span>${k.slice(8)}/${k.slice(5,7)}</span>`).join("")}</div>`;
+
+  if(total){
+    const seg=OUTCOMES.map(o=>({o,n:calls.filter(c=>c.outcome===o.k).length})).filter(s=>s.n);
+    let acc=0;const stops=seg.map(s=>{const a1=acc/total*360;acc+=s.n;const a2=acc/total*360;return `${s.o.color} ${a1}deg ${a2}deg`});
+    $("#chart-donut").innerHTML=`<div class="donut-wrap">
+      <div class="donut" style="background:conic-gradient(${stops.join(",")})"></div>
+      <div class="legend">${seg.map(s=>`<div><i style="background:${s.o.color}"></i>${s.o.label} <b>&nbsp;${s.n}</b>&nbsp;(${Math.round(s.n/total*100)}%)</div>`).join("")}</div></div>`;
+  }else $("#chart-donut").innerHTML='<div class="empty">Aucun appel encore</div>';
+
+  const byM={};
+  for(const c of calls){(byM[c.metier]=byM[c.metier]||{n:0,win:0}).n++;
+    if(c.outcome==="meeting"||c.outcome==="interested")byM[c.metier].win++}
+  const rows=Object.entries(byM).sort((a,b)=>b[1].n-a[1].n).slice(0,8);
+  const mmax=Math.max(...rows.map(r=>r[1].n),1);
+  $("#chart-metier").innerHTML=rows.length?rows.map(([m,v])=>
+    `<div class="hbar"><div class="t"><b>${METIERS[m]||m}</b><span>${v.n} appels · ${v.win} intéressés</span></div>
+     <div class="rail"><div class="fill" style="width:${v.n/mmax*100}%"></div></div></div>`).join("")
+    :'<div class="empty">Aucun appel encore</div>';
+
+  const hours=Array.from({length:12},(_,i)=>i+8);
+  const hstats=hours.map(h=>{const cs=calls.filter(c=>new Date(c.ts).getHours()===h);
+    const r=cs.filter(c=>reachedK.includes(c.outcome)).length;
+    return {h,n:cs.length,rate:cs.length?r/cs.length:0}});
+  const hm=Math.max(...hstats.map(s=>s.rate),0.01);
+  $("#chart-hours").innerHTML=`<div class="bars">${hstats.map(s=>
+    `<div class="b" style="height:${s.rate/hm*100}%;${s.n?"":"opacity:.12"}"><span class="tip">${s.n?Math.round(s.rate*100)+"%":""}</span></div>`).join("")}</div>
+    <div class="bars-x">${hours.map(h=>`<span>${h}h</span>`).join("")}</div>`;
+
+  /* enregistrements — URLs signées en batch */
+  const items=[...calls].reverse().slice(0,60);
+  const paths=items.filter(c=>c.recording).map(c=>c.recording);
+  let urls={};
+  if(paths.length){
+    const {data}=await sb.storage.from("recordings").createSignedUrls(paths,3600);
+    if(data)data.forEach(d=>{if(d.signedUrl)urls[d.path]=d.signedUrl});
+  }
+  $("#rec-list").innerHTML=items.length?items.map(c=>{
+    const o=OUT[c.outcome]||{ico:"•",label:c.outcome,color:"#888"};
+    const audio=c.recording&&urls[c.recording]?`<audio controls preload="none" src="${urls[c.recording]}"></audio>`:'<span class="rec-none">pas d\'enregistrement</span>';
+    return `<div class="rec-item">
+      <div class="who"><b>${esc(c.nom)}</b><span>${METIERS[c.metier]||c.metier} · ${fmtDate(c.ts)} · ${c.duration||0}s</span></div>
+      <span class="st" style="border-color:${o.color}55;color:${o.color}">${o.ico} ${o.label}</span>
+      ${audio}
+      <span class="rec-note">${esc(c.notes||"")}</span>
+    </div>`}).join(""):'<div class="empty">Tes appels et enregistrements apparaîtront ici</div>';
+}
+
+/* ================= CONTACTS ================= */
+function renderContacts(){
+  const q=($("#search").value||"").toLowerCase();
+  const fm=$("#f-metier").value, fs=$("#f-status").value;
+  const rows=contacts.filter(c=>{
+    if(fm&&c.metier!==fm)return false;
+    const st=statusOf(c.id);
+    if(fs&&st!==fs)return false;
+    if(q&&!(c.nom+c.ville+c.telephone).toLowerCase().includes(q))return false;
+    return true;
+  }).slice(0,400);
+  $("#contacts-body").innerHTML=rows.map(c=>{
+    const st=statusOf(c.id);const o=OUT[st];
+    const lbl=o?`<span class="st" style="border-color:${o.color}55;color:${o.color}">${o.ico} ${o.label}</span>`
+               :'<span class="st" style="border-color:#33333a;color:#8a8f98">Nouveau</span>';
+    return `<tr><td><b>${esc(c.nom)}</b></td><td>${esc(metier(c))}</td><td>${fmtPhone(c.telephone)}</td>
+      <td>${esc(c.ville||"—")}</td><td>${lbl}</td><td>${callsFor(c.id).length}</td>
+      <td><button class="btn-mini" data-id="${c.id}">Appeler</button></td></tr>`;
+  }).join("");
+  $("#contacts-body").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    forced=+b.dataset.id;switchView("call");renderLead();
+  });
+}
+
+/* ================= EXPORT ================= */
+function exportCSV(){
+  const head="date;nom;metier;telephone;ville;resultat;duree_s;rappel_le;notes";
+  const lines=calls.map(c=>[new Date(c.ts).toLocaleString("fr-FR"),c.nom,METIERS[c.metier]||c.metier,
+    c.telephone,c.ville||"",OUT[c.outcome]?.label||c.outcome,c.duration||0,
+    c.recall_at?new Date(c.recall_at).toLocaleString("fr-FR"):"",(c.notes||"").replace(/[;\n]/g," ")].join(";"));
+  const blob=new Blob(["﻿"+head+"\n"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="recap_appels_"+todayKey()+".csv";a.click();
+}
+
+/* ================= UI PLUMBING ================= */
+function switchView(v){
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  ["call","dash","contacts"].forEach(x=>$("#view-"+x).classList.toggle("hidden",x!==v));
+  if(v==="dash"){buildQueue();renderDash()}
+  if(v==="contacts")renderContacts();
+}
+function toast(msg){
+  const t=document.createElement("div");t.className="toast";t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2600);
+}
+function bindRecToggle(){
+  const el=$("#rec-toggle");
+  if(el)el.onclick=e=>{e.preventDefault();cfg.record=!cfg.record;saveCfg();
+    $("#rec-flag").textContent=cfg.record?"activé":"désactivé";};
+}
+
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>switchView(b.dataset.v));
+$("#btn-start").onclick=startCall;
+$("#btn-skip").onclick=()=>{if(session.running)return;if(current){skipped.add(current.id);renderLead()}};
+$("#btn-export").onclick=exportCSV;
+["search","f-metier","f-status"].forEach(id=>$("#"+id).addEventListener("input",renderContacts));
+$("#goal-txt").onclick=()=>{const g=prompt("Objectif d'appels / jour :",cfg.goal);if(g>0){cfg.goal=+g;saveCfg();updateRing()}};
+document.addEventListener("keydown",e=>{
+  if(e.target.matches("input,textarea"))return;
+  if(e.code==="Space"){e.preventDefault();if(!session.running)startCall()}
+  else if(e.key.toLowerCase()==="s"&&!session.running){$("#btn-skip").click()}
+  else if(session.running){const o=OUTCOMES.find(x=>x.key===e.key);if(o)classify(o.k)}
+});
+
+/* ================= AUTH & BOOT ================= */
+async function enterApp(){
+  try{await loadAll()}
+  catch(e){
+    console.error(e);
+    $("#setup-err").textContent="Connexion impossible — vérifie l'URL/clé et que le schéma SQL est installé.";
+    show("screen-setup");return;
+  }
+  if(!contacts.length){show("screen-import");return}
+  const ms=[...new Set(contacts.map(c=>c.metier))].sort();
+  $("#f-metier").innerHTML='<option value="">Tous les métiers</option>'+ms.map(m=>`<option value="${m}">${METIERS[m]||m}</option>`).join("");
+  show("app");
+  bindRecToggle();
+  $("#rec-flag").textContent=cfg.record?"activé":"désactivé";
+  renderLead();
+}
+
+$("#btn-setup").onclick=async()=>{
+  const url=$("#sb-url").value.trim().replace(/\/+$/,""), key=$("#sb-key").value.trim();
+  if(!/^https:\/\/.+\.supabase\.co$/.test(url)){$("#setup-err").textContent="URL invalide (format : https://xxxx.supabase.co)";return}
+  if(key.length<40){$("#setup-err").textContent="Clé anon invalide";return}
+  cfg.sb_url=url;cfg.sb_key=key;saveCfg();
+  boot();
+};
+$("#btn-login").onclick=async()=>{
+  $("#btn-login").disabled=true;$("#login-err").textContent="";
+  const {error}=await sb.auth.signInWithPassword({email:$("#login-email").value.trim(),password:$("#login-pw").value});
+  $("#btn-login").disabled=false;
+  if(error){$("#login-err").textContent="Identifiants incorrects";return}
+  enterApp();
+};
+$("#login-pw").addEventListener("keydown",e=>{if(e.key==="Enter")$("#btn-login").click()});
+$("#btn-logout").onclick=async()=>{await sb.auth.signOut();location.reload()};
+$("#btn-import").onclick=async()=>{
+  const f=$("#import-file").files[0];
+  if(!f){$("#import-err").textContent="Choisis d'abord le fichier CSV";return}
+  $("#btn-import").disabled=true;$("#import-err").textContent="Import en cours…";
+  try{
+    const n=await importCSV(f);
+    toast(n+" contacts importés");
+    await enterApp();
+  }catch(e){console.error(e);$("#import-err").textContent="Erreur : "+(e.message||e)}
+  $("#btn-import").disabled=false;
+};
+
+async function boot(){
+  if(!cfg.sb_url||!cfg.sb_key){show("screen-setup");return}
+  sb=window.supabase.createClient(cfg.sb_url,cfg.sb_key);
+  const {data:{session:s}}=await sb.auth.getSession();
+  if(!s){show("screen-login");return}
+  enterApp();
+}
+boot();
+</script>
+</body>
+</html>
