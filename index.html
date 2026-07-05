@@ -247,8 +247,9 @@ tr:hover td{background:var(--panel2)}
     <label>Mot de passe</label>
     <input id="login-pw" type="password" autocomplete="current-password">
     <button class="btn-primary" id="btn-login">Se connecter</button>
+    <button class="btn-ghost" id="btn-magic" style="width:100%;margin-top:10px">✉ Recevoir un lien de connexion par email</button>
     <div class="auth-err" id="login-err"></div>
-    <div class="auth-hint">Crée ton utilisateur dans Supabase → <b>Authentication → Add user</b>.</div>
+    <div class="auth-hint">Pas de compte ? Le lien magique le crée automatiquement — pas de mot de passe nécessaire.</div>
   </div>
 </div>
 
@@ -838,6 +839,19 @@ $("#btn-login").onclick=async()=>{
   enterApp();
 };
 $("#login-pw").addEventListener("keydown",e=>{if(e.key==="Enter")$("#btn-login").click()});
+$("#btn-magic").onclick=async()=>{
+  const email=$("#login-email").value.trim();
+  const err=$("#login-err");
+  if(!email){err.textContent="Entre d'abord ton email";return}
+  $("#btn-magic").disabled=true;err.style.color="";err.textContent="Envoi en cours…";
+  const {error}=await sb.auth.signInWithOtp({email,
+    options:{shouldCreateUser:true,emailRedirectTo:location.origin+location.pathname}});
+  $("#btn-magic").disabled=false;
+  if(error){err.textContent="Erreur : "+error.message;return}
+  err.style.color="var(--ok)";
+  err.textContent="✓ Email envoyé à "+email+" — ouvre le lien sur CET appareil.";
+};
+
 $("#btn-logout").onclick=async()=>{await sb.auth.signOut();location.reload()};
 $("#btn-import").onclick=async()=>{
   const f=$("#import-file").files[0];
