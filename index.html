@@ -247,9 +247,13 @@ tr:hover td{background:var(--panel2)}
     <label>Mot de passe</label>
     <input id="login-pw" type="password" autocomplete="current-password">
     <button class="btn-primary" id="btn-login">Se connecter</button>
-    <button class="btn-ghost" id="btn-magic" style="width:100%;margin-top:10px">✉ Recevoir un lien de connexion par email</button>
+    <button class="btn-ghost" id="btn-magic" style="width:100%;margin-top:10px">✉ Recevoir un code par email</button>
+    <div id="otp-row" class="hidden" style="display:flex;gap:8px;margin-top:10px">
+      <input id="otp-code" placeholder="Code à 6 chiffres" inputmode="numeric" autocomplete="one-time-code" style="flex:1;text-align:center;letter-spacing:4px;font-size:17px">
+      <button class="btn-ghost" id="btn-otp-verify" style="border-color:var(--acc);color:var(--txt)">Valider</button>
+    </div>
     <div class="auth-err" id="login-err"></div>
-    <div class="auth-hint">Pas de compte ? Le lien magique le crée automatiquement — pas de mot de passe nécessaire.</div>
+    <div class="auth-hint">Pas de compte ? Le code par email le crée automatiquement — pas de mot de passe nécessaire.</div>
   </div>
 </div>
 
@@ -848,9 +852,22 @@ $("#btn-magic").onclick=async()=>{
     options:{shouldCreateUser:true,emailRedirectTo:location.origin+location.pathname}});
   $("#btn-magic").disabled=false;
   if(error){err.textContent="Erreur : "+error.message;return}
+  $("#otp-row").classList.remove("hidden");
   err.style.color="var(--ok)";
-  err.textContent="✓ Email envoyé à "+email+" — ouvre le lien sur CET appareil.";
+  err.textContent="✓ Email envoyé — entre le code à 6 chiffres reçu (ou clique le lien de l'email).";
 };
+$("#btn-otp-verify").onclick=async()=>{
+  const email=$("#login-email").value.trim(), code=$("#otp-code").value.trim();
+  const err=$("#login-err");
+  if(!/^\d{6}$/.test(code)){err.style.color="";err.textContent="Le code fait 6 chiffres";return}
+  $("#btn-otp-verify").disabled=true;err.style.color="";err.textContent="Vérification…";
+  const {error}=await sb.auth.verifyOtp({email,token:code,type:"email"});
+  $("#btn-otp-verify").disabled=false;
+  if(error){err.textContent="Code invalide ou expiré — renvoie un email";return}
+  err.textContent="";
+  enterApp();
+};
+$("#otp-code").addEventListener("keydown",e=>{if(e.key==="Enter")$("#btn-otp-verify").click()});
 
 $("#btn-logout").onclick=async()=>{await sb.auth.signOut();location.reload()};
 $("#btn-import").onclick=async()=>{
