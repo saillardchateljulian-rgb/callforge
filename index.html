@@ -430,6 +430,9 @@ let skipped=new Set();
 let cfg=JSON.parse(localStorage.getItem("cf_cfg")||"{}");
 if(cfg.goal==null)cfg.goal=30;
 if(cfg.record==null)cfg.record=true;
+// Config par défaut du projet (clé publishable = publique par design, protégée par RLS)
+if(!cfg.sb_url)cfg.sb_url="https://tuneezaimywkuvodaekn.supabase.co";
+if(!cfg.sb_key)cfg.sb_key="sb_publishable_9j6JCuT8VOPZwrcKQz2KWw_uD3BmwGg";
 const saveCfg=()=>localStorage.setItem("cf_cfg",JSON.stringify(cfg));
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -885,8 +888,16 @@ $("#btn-import").onclick=async()=>{
 async function boot(){
   if(!cfg.sb_url||!cfg.sb_key){show("screen-setup");return}
   sb=window.supabase.createClient(cfg.sb_url,cfg.sb_key);
+  // affiche les erreurs renvoyees par le lien email (ex: lien expire)
+  const hashErr=new URLSearchParams(location.hash.slice(1)).get("error_description");
   const {data:{session:s}}=await sb.auth.getSession();
-  if(!s){show("screen-login");return}
+  if(!s){
+    show("screen-login");
+    if(hashErr){$("#login-err").textContent="Lien refusé : "+hashErr.replace(/\+/g," ")+" — renvoie un email.";history.replaceState(null,"",location.pathname)}
+    // si la session arrive apres coup (lien magique traite en async), on entre
+    sb.auth.onAuthStateChange((ev,sess)=>{if(sess&&$("#app").classList.contains("hidden"))enterApp()});
+    return;
+  }
   enterApp();
 }
 boot();
