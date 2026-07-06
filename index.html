@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#0a0a0b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%E2%9A%A1</text></svg>">
 <title>CallForge</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -180,23 +181,58 @@ tr:hover td{background:var(--panel2)}
 .pulse-ok{animation:pok .5s}
 @keyframes pok{0%{box-shadow:0 0 0 0 rgba(61,214,140,.5)}100%{box-shadow:0 0 0 26px rgba(61,214,140,0)}}
 
+/* ---------- barre d'onglets mobile ---------- */
+.tabbar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(13,13,15,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0 5px;color:var(--faint);font-size:10.5px;font-weight:500;border-radius:10px;transition:color .15s}
+.tabbar button svg{width:22px;height:22px}
+.tabbar button.on{color:var(--txt)}
+
 /* ---------- mobile ---------- */
 @media(max-width:980px){
   .grid,.dash-grid{grid-template-columns:1fr}
   .kpis{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:640px){
-  header{gap:10px;padding:0 12px}
-  nav button{padding:6px 9px;font-size:12.5px}
+  /* inputs a 16px : empeche le zoom automatique d'iOS au focus */
+  input,textarea,select{font-size:16px}
+  header{gap:8px;padding:0 14px;height:50px}
+  nav{display:none}
   .ring-txt{display:none}
-  main{padding:16px 12px calc(16px + env(safe-area-inset-bottom))}
-  .card{padding:16px}
-  .lead-name{font-size:21px}
-  .phone{font-size:29px}
+  .tabbar{display:flex}
+  main{padding:14px 12px calc(90px + env(safe-area-inset-bottom))}
+  .card{padding:16px;border-radius:14px}
+  .auth-card{padding:26px 20px}
+  .lead-name{font-size:22px}
+  .lead-sub{font-size:14px}
+  .phone{font-size:31px;margin:16px 0 6px}
+  .phone a{display:block;padding:6px 0}
   .outcomes{grid-template-columns:repeat(2,1fr)}
+  .outcomes button{padding:15px 8px;font-size:14px;gap:6px}
+  .outcomes .key{display:none}
+  .btn-call{padding:17px;font-size:16px}
+  .btn-call span{display:none}
+  .btn-ghost{padding:15px 18px}
+  .btn-primary{padding:15px}
   .callbar{flex-wrap:wrap}
-  .rec-item .who{min-width:130px}
+  textarea#notes{min-height:60px}
+  .kpis{gap:10px}
+  .kpi{padding:13px 14px}
+  .kpi .v{font-size:20px}
+  .kpi .s{display:none}
+  .dash-grid{gap:12px}
+  .donut-wrap{justify-content:center;gap:16px}
+  .donut{width:104px;height:104px}
+  .donut::after{inset:17px}
+  .legend{flex:1;min-width:150px;font-size:12px}
+  .bars{height:90px;gap:3px}
+  .bars-x{gap:3px}
+  .bars-x span{font-size:7.5px}
+  .rec-item .who{min-width:120px}
+  .rec-note{max-width:100%}
   th:nth-child(4),td:nth-child(4),th:nth-child(6),td:nth-child(6){display:none}
+  td,th{padding:12px 8px}
+  .btn-mini{padding:8px 13px}
+  .toolbar select{flex:1}
 }
 </style>
 </head>
@@ -393,6 +429,21 @@ tr:hover td{background:var(--panel2)}
 
 </main>
 
+<div class="tabbar hidden" id="tabbar">
+  <button data-v="call">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
+    Appels
+  </button>
+  <button data-v="dash">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M13 17V5"/><path d="M18 17v-6"/></svg>
+    Dashboard
+  </button>
+  <button data-v="contacts">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Contacts
+  </button>
+</div>
+
 <div id="popover-root"></div>
 
 <script>
@@ -451,6 +502,7 @@ function show(screen){
   const inApp=screen==="app";
   $("#main-nav").classList.toggle("hidden",!inApp);
   $("#ring-wrap").classList.toggle("hidden",!inApp);
+  $("#tabbar").classList.toggle("hidden",!inApp);
 }
 
 /* ================= SUPABASE DATA LAYER ================= */
@@ -782,7 +834,7 @@ function exportCSV(){
 
 /* ================= UI PLUMBING ================= */
 function switchView(v){
-  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  document.querySelectorAll("[data-v]").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
   ["call","dash","contacts"].forEach(x=>$("#view-"+x).classList.toggle("hidden",x!==v));
   if(v==="dash"){buildQueue();renderDash()}
   if(v==="contacts")renderContacts();
@@ -797,7 +849,7 @@ function bindRecToggle(){
     $("#rec-flag").textContent=cfg.record?"activé":"désactivé";};
 }
 
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>switchView(b.dataset.v));
+document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>switchView(b.dataset.v));
 $("#btn-start").onclick=startCall;
 $("#btn-skip").onclick=()=>{if(session.running)return;if(current){skipped.add(current.id);renderLead()}};
 $("#btn-export").onclick=exportCSV;
@@ -822,6 +874,7 @@ async function enterApp(){
   const ms=[...new Set(contacts.map(c=>c.metier))].sort();
   $("#f-metier").innerHTML='<option value="">Tous les métiers</option>'+ms.map(m=>`<option value="${m}">${METIERS[m]||m}</option>`).join("");
   show("app");
+  switchView("call");
   bindRecToggle();
   $("#rec-flag").textContent=cfg.record?"activé":"désactivé";
   renderLead();
