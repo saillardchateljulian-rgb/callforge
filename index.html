@@ -59,7 +59,7 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px calc(24px + env(safe-area-
 .btn-primary{width:100%;padding:12px;border-radius:9px;font-size:14px;font-weight:600;background:#fff;color:#0a0a0b;margin-top:20px;transition:opacity .15s}
 .btn-primary:hover{opacity:.9}
 .btn-primary:disabled{opacity:.4}
-.auth-err{color:var(--bad);font-size:13px;margin-top:12px;min-height:18px}
+.auth-err{color:var(--bad);font-size:13px;margin-top:12px;min-height:18px;line-height:1.55}
 .auth-hint{color:var(--faint);font-size:12px;margin-top:16px;line-height:1.6}
 .auth-hint a{color:var(--muted)}
 
@@ -571,6 +571,10 @@ if(!cfg.sb_url)cfg.sb_url="https://tuneezaimywkuvodaekn.supabase.co";
 if(!cfg.sb_key)cfg.sb_key="sb_publishable_9j6JCuT8VOPZwrcKQz2KWw_uD3BmwGg";
 const saveCfg=()=>localStorage.setItem("cf_cfg",JSON.stringify(cfg));
 const $=s=>document.querySelector(s);
+/* Projet Supabase injoignable (pause auto du plan gratuit apres ~7j sans usage) */
+const isNetErr=e=>e&&(e.name==="AuthRetryableFetchError"||
+  /failed to fetch|load failed|networkerror|fetch failed|network request failed|name_not_resolved/i.test(String(e.message||e)));
+const NET_MSG="Base de données injoignable — ton projet Supabase est probablement en pause (plan gratuit : pause automatique après ~7 jours sans utilisation). Va sur supabase.com → ton projet → bouton « Restore », attends 1-2 min, puis recharge cette page.";
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 /* ================= HELPERS ================= */
@@ -987,6 +991,7 @@ async function enterApp(){
   try{await loadAll()}
   catch(e){
     console.error(e);
+    if(isNetErr(e)){show("screen-login");$("#login-err").textContent=NET_MSG;return}
     $("#setup-err").textContent="Connexion impossible — vérifie l'URL/clé et que le schéma SQL est installé.";
     show("screen-setup");return;
   }
@@ -1010,7 +1015,7 @@ $("#btn-login").onclick=async()=>{
   $("#btn-login").disabled=true;$("#login-err").textContent="";
   const {error}=await sb.auth.signInWithPassword({email:$("#login-email").value.trim(),password:$("#login-pw").value});
   $("#btn-login").disabled=false;
-  if(error){$("#login-err").textContent="Identifiants incorrects";return}
+  if(error){$("#login-err").textContent=isNetErr(error)?NET_MSG:"Identifiants incorrects";return}
   enterApp();
 };
 $("#login-pw").addEventListener("keydown",e=>{if(e.key==="Enter")$("#btn-login").click()});
@@ -1023,7 +1028,9 @@ $("#btn-signup").onclick=async()=>{
   const {data,error}=await sb.auth.signUp({email,password:pw});
   $("#btn-signup").disabled=false;
   if(error){
-    err.textContent=/already/i.test(error.message)?"Ce compte existe déjà — utilise « Se connecter »":"Erreur : "+error.message;
+    err.textContent=isNetErr(error)?NET_MSG
+      :/already/i.test(error.message)?"Ce compte existe déjà — utilise « Se connecter »"
+      :"Erreur : "+error.message;
     return;
   }
   if(!data.session){err.textContent="Compte créé — connecte-toi maintenant";return}
