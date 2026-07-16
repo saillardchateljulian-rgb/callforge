@@ -42,6 +42,7 @@ nav button.on{background:var(--panel2);color:var(--txt)}
 .ring-txt b{color:var(--txt);font-size:13px;font-weight:600;cursor:pointer}
 #btn-logout{font-size:11.5px;color:var(--faint)}
 #btn-logout:hover{color:var(--muted)}
+#sel-secteur{padding:6px 30px 6px 10px;font-size:12.5px;border-radius:8px;max-width:220px;color:var(--txt);background:var(--panel2);border-color:var(--line);appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238a8f98' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
 
 /* ---------- layout ---------- */
 main{max-width:1180px;margin:0 auto;padding:24px 20px calc(24px + env(safe-area-inset-bottom))}
@@ -246,6 +247,7 @@ tr:hover td{background:var(--panel2)}
     <button data-v="contacts">Contacts</button>
   </nav>
   <div class="spacer"></div>
+  <select id="sel-secteur" class="hidden" title="Secteur de prospection"></select>
   <div class="ring-wrap hidden" id="ring-wrap">
     <button id="btn-logout">déconnexion</button>
     <div class="ring-txt">Aujourd'hui<br><b id="today-count">0</b> <span style="color:var(--faint)">/ <span id="goal-txt">30</span></span></div>
@@ -293,7 +295,7 @@ tr:hover td{background:var(--panel2)}
 <div class="center-screen hidden" id="screen-import">
   <div class="auth-card">
     <h2>Importer tes contacts</h2>
-    <div class="sub">Ta base est vide. Importe ton CSV d'artisans (colonnes : nom, metier, telephone, email, ville, adresse).</div>
+    <div class="sub">Ta base est vide. Importe un CSV de contacts (colonnes : nom, metier, telephone, email, ville, adresse).</div>
     <input type="file" id="import-file" accept=".csv" style="width:100%;padding:10px">
     <button class="btn-primary" id="btn-import">Importer</button>
     <div class="auth-err" id="import-err"></div>
@@ -330,6 +332,7 @@ tr:hover td{background:var(--panel2)}
     </div>
 
     <div class="card script">
+      <div id="script-artisans">
       <h3>Script de vente</h3>
       <div class="script-sub">Offre : site web IA + Google Ads pour artisans</div>
 
@@ -377,6 +380,74 @@ tr:hover td{background:var(--panel2)}
           <p style="color:var(--faint);font-size:12.5px">Bonne pratique : annonce que l'appel peut être enregistré.</p>
         </div>
       </details>
+      </div>
+
+      <div id="script-pme_btp" class="hidden">
+      <h3>Script découverte</h3>
+      <div class="script-sub">Offre : Diagnostic IA — PME second œuvre 06/83 · objectif : RDV 15 min, pas vendre</div>
+
+      <details open>
+        <summary>Passer le standard</summary>
+        <div class="body">
+          <p>« Bonjour, je cherche à joindre <i>[prénom + nom du dirigeant]</i> s'il vous plaît. » <span style="color:var(--faint)">(son nom est sur la fiche, à côté de la ville)</span></p>
+          <p><i>« C'est à quel sujet ? »</i> → « Au sujet du temps que son bureau passe sur les devis et les appels d'offres — il comprendra. »</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Accroche dirigeant — 20 secondes</summary>
+        <div class="body">
+          <p>« Bonjour <i>[prénom]</i>, Julian. Je travaille avec des entreprises du second œuvre dans le <i>[06/83]</i> sur un sujet précis : le temps que le bureau perd sur les devis, les appels d'offres et les relances. »</p>
+          <p>« Je ne vous vends rien aujourd'hui — je mène une série d'échanges de 15 minutes avec des dirigeants du métier pour comprendre où ça bloque vraiment. Vous avez 2 minutes là, ou je vous rappelle sur un créneau que vous me donnez ? »</p>
+          <p style="color:var(--faint);font-size:12.5px">→ Ton calme, pas de jargon IA dans les 30 premières secondes.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Les 3 questions découverte</summary>
+        <div class="body">
+          <p><i>1.</i> « Aujourd'hui, où est-ce que votre bureau perd le plus de temps — devis, réponses aux AO, relances, comptes rendus de chantier ? »</p>
+          <p><i>2.</i> « Vous avez déjà testé des outils IA ? Qu'est-ce qui a coincé ? »</p>
+          <p><i>3.</i> « Si vos deviseurs gagnaient plusieurs heures par semaine là-dessus, ça vaudrait quoi pour vous ? »</p>
+          <p style="color:var(--faint);font-size:12.5px">→ Noter leurs mots exacts dans les notes : c'est le futur script de vente.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Pitch Diagnostic — si intérêt</summary>
+        <div class="body">
+          <p>« Ce que je propose : un <i>Diagnostic IA de 2 semaines</i>. J'audite vos flux bureau, j'identifie les 3 automatisations les plus rentables, et j'en livre <i>une qui fonctionne</i> avant la fin. Prix fixe, annoncé en RDV. »</p>
+          <p>« Votre équipe de 20 produit comme une équipe de 28 — sans embaucher, sans licencier. »</p>
+          <p>« 15 minutes cette semaine pour que je vous montre concrètement ? Mardi ou jeudi ? »</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Objections</summary>
+        <div class="body">
+          <p><i>« On n'a pas le temps »</i> → « Justement, c'est le symptôme. 15 minutes, et c'est moi qui fais tout le travail ensuite. »</p>
+          <p><i>« L'IA c'est pas pour nous »</i> → « Pour vos gars sur chantier, non. Pour les personnes de votre bureau qui font les devis et les AO, si — et personne ne vous en a jamais parlé. »</p>
+          <p><i>« Envoyez-moi un mail »</i> → « Je peux, mais un PDF ne montre rien. En 15 minutes je vous montre sur VOS devis. Mardi 8h ou jeudi 17h ? »</p>
+          <p><i>« Combien ? »</i> → « Prix fixe, moins qu'une seule réponse d'appel d'offres perdue. Je vous donne le chiffre exact en RDV, une fois que j'ai vu vos volumes. »</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Closing RDV</summary>
+        <div class="body">
+          <p>Toujours <i>deux créneaux précis</i> : « Mardi 8h ou jeudi 17h ? » — jamais « quand êtes-vous dispo ? ».</p>
+          <p>Confirmer par SMS immédiatement. L'objectif de l'appel est le RDV de 15 min — le Diagnostic se vend en RDV, jamais au téléphone.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Raccourcis clavier</summary>
+        <div class="body">
+          <p><kbd>espace</kbd> démarrer l'appel · <kbd>1</kbd>–<kbd>7</kbd> classer · <kbd>S</kbd> passer le contact</p>
+          <p style="color:var(--faint);font-size:12.5px">Bonne pratique : annonce que l'appel peut être enregistré.</p>
+        </div>
+      </details>
+      </div>
     </div>
   </div>
 </section>
@@ -405,6 +476,8 @@ tr:hover td{background:var(--panel2)}
   <div class="card">
     <div class="toolbar">
       <input id="search" placeholder="Rechercher nom, ville, numéro…" style="flex:1;min-width:180px">
+      <button class="btn-mini" id="btn-add-csv" style="align-self:center;white-space:nowrap">＋ Importer CSV</button>
+      <input type="file" id="add-csv-file" accept=".csv" class="hidden">
       <select id="f-metier"><option value="">Tous les métiers</option></select>
       <select id="f-status">
         <option value="">Tous les statuts</option>
@@ -452,10 +525,25 @@ const METIERS = {plumber:"Plombier",electrician:"Électricien",carpenter:"Charpe
   hvac:"Chauffagiste / Clim",roofer:"Couvreur",tiler:"Carreleur",plasterer:"Plaquiste",glaziery:"Vitrier",
   locksmith:"Serrurier",stonemason:"Tailleur de pierre",metal_construction:"Métallier",scaffolder:"Échafaudeur",
   floorer:"Solier",parquet_layer:"Parqueteur",insulation:"Isolation",joiner:"Menuisier",
-  window_construction:"Menuiseries / Fenêtres",heating_engineer:"Chauffagiste"};
+  window_construction:"Menuiseries / Fenêtres",heating_engineer:"Chauffagiste",
+  btp_elec:"Électricité (PME)",btp_plomberie:"Plomberie (PME)",btp_cvc:"CVC / Génie climatique",
+  btp_isolation:"Isolation (PME)",btp_menuiserie:"Menuiserie (PME)",btp_peinture:"Peinture (PME)",
+  btp_maconnerie:"Maçonnerie / Gros œuvre"};
 const PRIORITY = {plumber:10,electrician:9,hvac:9,roofer:8,heating_engineer:8,locksmith:7,joiner:6,
   window_construction:6,carpenter:5,metal_construction:5,painter:4,tiler:4,plasterer:3,insulation:3,
-  glaziery:3,stonemason:2,parquet_layer:2,scaffolder:1,floorer:1};
+  glaziery:3,stonemason:2,parquet_layer:2,scaffolder:1,floorer:1,
+  btp_elec:10,btp_cvc:9,btp_plomberie:9,btp_maconnerie:7,btp_menuiserie:6,btp_isolation:5,btp_peinture:4};
+/* Secteurs de prospection : chaque secteur regroupe des métiers + son script de vente */
+const SECTEURS = {
+  artisans:{label:"Artisans — Sites web",
+    metiers:["plumber","electrician","carpenter","painter","hvac","roofer","tiler","plasterer","glaziery",
+      "locksmith","stonemason","metal_construction","scaffolder","floorer","parquet_layer","insulation",
+      "joiner","window_construction","heating_engineer"]},
+  pme_btp:{label:"PME BTP — Conseil IA",
+    metiers:["btp_elec","btp_plomberie","btp_cvc","btp_isolation","btp_menuiserie","btp_peinture","btp_maconnerie"]},
+};
+const secteurOf=m=>Object.keys(SECTEURS).find(k=>SECTEURS[k].metiers.includes(m))||"artisans";
+const inSecteur=c=>secteurOf(c.metier)===cfg.secteur;
 const OUTCOMES = [
  {k:"no_answer",     label:"Pas de réponse", ico:"○", key:"1", color:"#8a8f98"},
  {k:"voicemail",     label:"Répondeur",      ico:"◍", key:"2", color:"#f5a623"},
@@ -477,6 +565,7 @@ let skipped=new Set();
 let cfg=JSON.parse(localStorage.getItem("cf_cfg")||"{}");
 if(cfg.goal==null)cfg.goal=30;
 if(cfg.record==null)cfg.record=true;
+if(!cfg.secteur)cfg.secteur="artisans";
 // Config par défaut du projet (clé publishable = publique par design, protégée par RLS)
 if(!cfg.sb_url)cfg.sb_url="https://tuneezaimywkuvodaekn.supabase.co";
 if(!cfg.sb_key)cfg.sb_key="sb_publishable_9j6JCuT8VOPZwrcKQz2KWw_uD3BmwGg";
@@ -502,6 +591,7 @@ function show(screen){
   const inApp=screen==="app";
   $("#main-nav").classList.toggle("hidden",!inApp);
   $("#ring-wrap").classList.toggle("hidden",!inApp);
+  $("#sel-secteur").classList.toggle("hidden",!inApp);
   $("#tabbar").classList.toggle("hidden",!inApp);
 }
 
@@ -547,14 +637,14 @@ function parseCSV(text){
   if(cur!==""||row.length){row.push(cur);rows.push(row)}
   return rows;
 }
-async function importCSV(file){
+async function importCSV(file,idOffset=0){
   const text=await file.text();
   const rows=parseCSV(text);
   const head=rows[0].map(h=>h.trim().toLowerCase());
   const idx=Object.fromEntries(["nom","metier","telephone","email","ville","adresse"].map(k=>[k,head.indexOf(k)]));
   if(idx.nom<0||idx.telephone<0)throw new Error("Colonnes 'nom' et 'telephone' introuvables dans le CSV");
   const recs=rows.slice(1).filter(r=>r[idx.nom]).map((r,i)=>({
-    id:i,nom:r[idx.nom]||"",metier:r[idx.metier]||"",telephone:r[idx.telephone]||"",
+    id:idOffset+i,nom:r[idx.nom]||"",metier:r[idx.metier]||"",telephone:r[idx.telephone]||"",
     email:idx.email>=0?(r[idx.email]||""):"",ville:idx.ville>=0?(r[idx.ville]||""):"",
     adresse:idx.adresse>=0?(r[idx.adresse]||""):""}));
   for(let i=0;i<recs.length;i+=500){
@@ -568,6 +658,7 @@ async function importCSV(file){
 function buildQueue(){
   const now=Date.now(), due=[], retry=[], fresh=[];
   for(const c of contacts){
+    if(!inSecteur(c))continue;
     if(skipped.has(c.id))continue;
     const hist=callsFor(c.id), last=hist.length?hist[hist.length-1]:null;
     if(!last){fresh.push(c);continue}
@@ -722,18 +813,19 @@ function askRecallDate(k){
 
 /* ================= DASHBOARD ================= */
 function updateRing(){
-  const t=calls.filter(c=>dayKey(c.ts)===todayKey()).length;
+  const t=calls.filter(c=>dayKey(c.ts)===todayKey()&&secteurOf(c.metier)===cfg.secteur).length;
   $("#today-count").textContent=t;$("#goal-txt").textContent=cfg.goal;
   const pct=Math.min(1,t/cfg.goal);
   $("#ring").style.strokeDashoffset=100.5*(1-pct);
 }
 async function renderDash(){
   const reachedK=["not_interested","interested","meeting","callback"];
-  const total=calls.length;
-  const today=calls.filter(c=>dayKey(c.ts)===todayKey()).length;
-  const reached=calls.filter(c=>reachedK.includes(c.outcome));
-  const meetings=calls.filter(c=>c.outcome==="meeting").length;
-  const hot=calls.filter(c=>c.outcome==="interested").length;
+  const scalls=calls.filter(c=>secteurOf(c.metier)===cfg.secteur);
+  const total=scalls.length;
+  const today=scalls.filter(c=>dayKey(c.ts)===todayKey()).length;
+  const reached=scalls.filter(c=>reachedK.includes(c.outcome));
+  const meetings=scalls.filter(c=>c.outcome==="meeting").length;
+  const hot=scalls.filter(c=>c.outcome==="interested").length;
   const pickup=total?Math.round(reached.length/total*100):0;
   const interest=reached.length?Math.round((meetings+hot)/reached.length*100):0;
   const dueN=queue.filter(c=>c._tag==="due"||c._tag==="hot").length;
@@ -746,13 +838,13 @@ async function renderDash(){
   ].map(k=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join("");
 
   const days=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(dayKey(d.getTime()))}
-  const perDay=days.map(k=>calls.filter(c=>dayKey(c.ts)===k).length);
+  const perDay=days.map(k=>scalls.filter(c=>dayKey(c.ts)===k).length);
   const mx=Math.max(...perDay,1);
   $("#chart-days").innerHTML=`<div class="bars">${perDay.map(v=>`<div class="b" style="height:${v/mx*100}%"><span class="tip">${v||""}</span></div>`).join("")}</div>
     <div class="bars-x">${days.map(k=>`<span>${k.slice(8)}/${k.slice(5,7)}</span>`).join("")}</div>`;
 
   if(total){
-    const seg=OUTCOMES.map(o=>({o,n:calls.filter(c=>c.outcome===o.k).length})).filter(s=>s.n);
+    const seg=OUTCOMES.map(o=>({o,n:scalls.filter(c=>c.outcome===o.k).length})).filter(s=>s.n);
     let acc=0;const stops=seg.map(s=>{const a1=acc/total*360;acc+=s.n;const a2=acc/total*360;return `${s.o.color} ${a1}deg ${a2}deg`});
     $("#chart-donut").innerHTML=`<div class="donut-wrap">
       <div class="donut" style="background:conic-gradient(${stops.join(",")})"></div>
@@ -760,7 +852,7 @@ async function renderDash(){
   }else $("#chart-donut").innerHTML='<div class="empty">Aucun appel encore</div>';
 
   const byM={};
-  for(const c of calls){(byM[c.metier]=byM[c.metier]||{n:0,win:0}).n++;
+  for(const c of scalls){(byM[c.metier]=byM[c.metier]||{n:0,win:0}).n++;
     if(c.outcome==="meeting"||c.outcome==="interested")byM[c.metier].win++}
   const rows=Object.entries(byM).sort((a,b)=>b[1].n-a[1].n).slice(0,8);
   const mmax=Math.max(...rows.map(r=>r[1].n),1);
@@ -770,7 +862,7 @@ async function renderDash(){
     :'<div class="empty">Aucun appel encore</div>';
 
   const hours=Array.from({length:12},(_,i)=>i+8);
-  const hstats=hours.map(h=>{const cs=calls.filter(c=>new Date(c.ts).getHours()===h);
+  const hstats=hours.map(h=>{const cs=scalls.filter(c=>new Date(c.ts).getHours()===h);
     const r=cs.filter(c=>reachedK.includes(c.outcome)).length;
     return {h,n:cs.length,rate:cs.length?r/cs.length:0}});
   const hm=Math.max(...hstats.map(s=>s.rate),0.01);
@@ -779,7 +871,7 @@ async function renderDash(){
     <div class="bars-x">${hours.map(h=>`<span>${h}h</span>`).join("")}</div>`;
 
   /* enregistrements — URLs signées en batch */
-  const items=[...calls].reverse().slice(0,60);
+  const items=[...scalls].reverse().slice(0,60);
   const paths=items.filter(c=>c.recording).map(c=>c.recording);
   let urls={};
   if(paths.length){
@@ -802,6 +894,7 @@ function renderContacts(){
   const q=($("#search").value||"").toLowerCase();
   const fm=$("#f-metier").value, fs=$("#f-status").value;
   const rows=contacts.filter(c=>{
+    if(!inSecteur(c))return false;
     if(fm&&c.metier!==fm)return false;
     const st=statusOf(c.id);
     if(fs&&st!==fs)return false;
@@ -833,6 +926,21 @@ function exportCSV(){
 }
 
 /* ================= UI PLUMBING ================= */
+function updateMetierFilter(){
+  const ms=[...new Set(contacts.filter(inSecteur).map(c=>c.metier))].sort();
+  $("#f-metier").innerHTML='<option value="">Tous les métiers</option>'+ms.map(m=>`<option value="${m}">${METIERS[m]||m}</option>`).join("");
+}
+function applySecteur(){
+  $("#sel-secteur").value=cfg.secteur;
+  Object.keys(SECTEURS).forEach(k=>{const el=$("#script-"+k);if(el)el.classList.toggle("hidden",k!==cfg.secteur)});
+  skipped.clear();forced=null;
+  updateMetierFilter();
+  $("#f-metier").value="";
+  renderLead();
+  const active=document.querySelector("#main-nav button.on")?.dataset.v||"call";
+  if(active==="dash")renderDash();
+  if(active==="contacts")renderContacts();
+}
 function switchView(v){
   document.querySelectorAll("[data-v]").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
   ["call","dash","contacts"].forEach(x=>$("#view-"+x).classList.toggle("hidden",x!==v));
@@ -850,6 +958,18 @@ function bindRecToggle(){
 }
 
 document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>switchView(b.dataset.v));
+$("#sel-secteur").onchange=e=>{cfg.secteur=e.target.value;saveCfg();applySecteur();toast("Secteur : "+SECTEURS[cfg.secteur].label)};
+$("#btn-add-csv").onclick=()=>$("#add-csv-file").click();
+$("#add-csv-file").onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{
+    const n=await importCSV(f,contacts.length?Math.max(...contacts.map(c=>c.id))+1:0);
+    await loadAll();
+    updateMetierFilter();renderContacts();renderLead();
+    toast(n+" contacts ajoutés");
+  }catch(err){console.error(err);toast("Erreur import : "+(err.message||err))}
+  e.target.value="";
+};
 $("#btn-start").onclick=startCall;
 $("#btn-skip").onclick=()=>{if(session.running)return;if(current){skipped.add(current.id);renderLead()}};
 $("#btn-export").onclick=exportCSV;
@@ -871,13 +991,12 @@ async function enterApp(){
     show("screen-setup");return;
   }
   if(!contacts.length){show("screen-import");return}
-  const ms=[...new Set(contacts.map(c=>c.metier))].sort();
-  $("#f-metier").innerHTML='<option value="">Tous les métiers</option>'+ms.map(m=>`<option value="${m}">${METIERS[m]||m}</option>`).join("");
+  $("#sel-secteur").innerHTML=Object.entries(SECTEURS).map(([k,s])=>`<option value="${k}">${s.label}</option>`).join("");
   show("app");
   switchView("call");
   bindRecToggle();
   $("#rec-flag").textContent=cfg.record?"activé":"désactivé";
-  renderLead();
+  applySecteur();
 }
 
 $("#btn-setup").onclick=async()=>{
