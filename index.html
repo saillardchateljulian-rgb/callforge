@@ -526,10 +526,11 @@ const METIERS = {plumber:"Plombier",electrician:"Électricien",carpenter:"Charpe
   locksmith:"Serrurier",stonemason:"Tailleur de pierre",metal_construction:"Métallier",scaffolder:"Échafaudeur",
   floorer:"Solier",parquet_layer:"Parqueteur",insulation:"Isolation",joiner:"Menuisier",
   window_construction:"Menuiseries / Fenêtres",heating_engineer:"Chauffagiste",
+  landscaper:"Paysagiste / Jardinier",
   btp_elec:"Électricité (PME)",btp_plomberie:"Plomberie (PME)",btp_cvc:"CVC / Génie climatique",
   btp_isolation:"Isolation (PME)",btp_menuiserie:"Menuiserie (PME)",btp_peinture:"Peinture (PME)",
   btp_maconnerie:"Maçonnerie / Gros œuvre"};
-const PRIORITY = {plumber:10,electrician:9,hvac:9,roofer:8,heating_engineer:8,locksmith:7,joiner:6,
+const PRIORITY = {landscaper:11,plumber:10,electrician:9,hvac:9,roofer:8,heating_engineer:8,locksmith:7,joiner:6,
   window_construction:6,carpenter:5,metal_construction:5,painter:4,tiler:4,plasterer:3,insulation:3,
   glaziery:3,stonemason:2,parquet_layer:2,scaffolder:1,floorer:1,
   /* PME : priorité identique pour tous les métiers — c'est l'effectif qui prime,
@@ -538,7 +539,7 @@ const PRIORITY = {plumber:10,electrician:9,hvac:9,roofer:8,heating_engineer:8,lo
 /* Secteurs de prospection : chaque secteur regroupe des métiers + son script de vente */
 const SECTEURS = {
   artisans:{label:"Artisans — Sites web",
-    metiers:["plumber","electrician","carpenter","painter","hvac","roofer","tiler","plasterer","glaziery",
+    metiers:["landscaper","plumber","electrician","carpenter","painter","hvac","roofer","tiler","plasterer","glaziery",
       "locksmith","stonemason","metal_construction","scaffolder","floorer","parquet_layer","insulation",
       "joiner","window_construction","heating_engineer"]},
   pme_btp:{label:"PME BTP — Conseil IA",
