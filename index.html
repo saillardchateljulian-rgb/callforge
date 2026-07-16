@@ -532,7 +532,9 @@ const METIERS = {plumber:"Plombier",electrician:"Électricien",carpenter:"Charpe
 const PRIORITY = {plumber:10,electrician:9,hvac:9,roofer:8,heating_engineer:8,locksmith:7,joiner:6,
   window_construction:6,carpenter:5,metal_construction:5,painter:4,tiler:4,plasterer:3,insulation:3,
   glaziery:3,stonemason:2,parquet_layer:2,scaffolder:1,floorer:1,
-  btp_elec:10,btp_cvc:9,btp_plomberie:9,btp_maconnerie:7,btp_menuiserie:6,btp_isolation:5,btp_peinture:4};
+  /* PME : priorité identique pour tous les métiers — c'est l'effectif qui prime,
+     et l'ordre des id du fichier va du plus gros au plus petit. */
+  btp_elec:5,btp_cvc:5,btp_plomberie:5,btp_maconnerie:5,btp_menuiserie:5,btp_isolation:5,btp_peinture:5};
 /* Secteurs de prospection : chaque secteur regroupe des métiers + son script de vente */
 const SECTEURS = {
   artisans:{label:"Artisans — Sites web",
